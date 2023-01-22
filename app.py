@@ -1,6 +1,9 @@
 from flask import Flask
 from flask import url_for
+from flask import request
+from flask import render_template
 from markupsafe import escape
+
 
 #cmd : flask run // flask --app <filename> run
 app = Flask(__name__)
@@ -75,3 +78,43 @@ def testname(testname):
 
 with app.test_request_context():
     print(url_for('testname', testname = testname))
+
+
+'''
+HTTP Methods
+
+app.route() 데코레이터는 기본적으로 GET 요청만 응답한다.
+app.route() 데코레이터의 method 매개변수를 통해 다른 HTTP Method들을 제어할 수 있다.
+'''
+
+def do_the_login():
+    return "Access Allow"
+
+def fail_the_login():
+    return "Access Denied"
+
+#Post http 구현 후 사용해볼 것
+@app.route("/login", methods = ['GET', 'POST'])
+def login(): 
+    if request.method == 'POST':
+        return do_the_login()
+    else:
+        return fail_the_login()
+
+'''
+동적 웹 애플리케이션을 위해 정적 파일(Static files)들이 필요하다.
+CSS, Js 등이 위치하게된다.
+웹 서버가 이를 지원하는게 제일 이상적인 방법이지만 개발 도중엔 Flask도 이 기능을 지원한다.
+패키지 또는 모듈 옆에 static 폴더를 만들면 /static 을 통해 사용할 수 있다.
+url_for('static', filename='style.css')
+'''
+
+#Rendering Templates
+#Python에서 HTML을 생성하는건 매우 고된 일이고, HTML 이스케이프를 일일히 수행해야하므로 번거롭다.
+#이 때문에 Flask는 자동으로 Jinja2 Templete Engine을 구성했다.
+#템플릿을 사용하여 모든 유형의 텍스트 파일을 생성할 수 있고 Markdown, 메일을 위한 평문이나 여러 것들도 당연히 생성할 수 있으며 주로 HTML파일을 생성할 것이다.
+#templates 폴더에서 문서를 찾는다
+@app.route("/hello/")
+@app.route("/hello/<name>")
+def hello_html(name=None):
+    return render_template('hello.html', name=escape(name))
