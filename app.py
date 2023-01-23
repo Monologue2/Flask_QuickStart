@@ -3,6 +3,7 @@ from flask import url_for
 from flask import request
 from flask import render_template
 from markupsafe import escape
+from markupsafe import Markup
 
 
 #cmd : flask run // flask --app <filename> run
@@ -93,13 +94,7 @@ def do_the_login():
 def fail_the_login():
     return "Access Denied"
 
-#Post http 구현 후 사용해볼 것
-@app.route("/login", methods = ['GET', 'POST'])
-def login(): 
-    if request.method == 'POST':
-        return do_the_login()
-    else:
-        return fail_the_login()
+
 
 '''
 동적 웹 애플리케이션을 위해 정적 파일(Static files)들이 필요하다.
@@ -117,4 +112,34 @@ url_for('static', filename='style.css')
 @app.route("/hello/")
 @app.route("/hello/<name>")
 def hello_html(name=None):
+    #name=escape()를 사용하였으나, render_template 함수는 자동으로 escape를 지원한다
     return render_template('hello.html', name=escape(name))
+
+
+'''
+Context Local과 Request 전역 변수
+Flask의 Context는 request를 처리하거나 CLI 명령어를 처리하기 위해 필요한 정보를 저장하고 제공하기 위해 사용한다
+
+아래 예제에서, 모든 요청에 대해 Request 전역 변수를 활용하는 것 같으나, Request 객체를 전역 변수로 사용할 수 없다
+멀티 Thread 환경으로 어플리케이션이 동작할 때 모든 Thread가 같은 Request 객체에 접근시 Thread-Safe 하지 않다.
+이때 Context 개념이 등장한다, Context를 활용하여 특정 변수를 전역 변수처럼 사용하지만 특정 단위(Thread, Process, Conrutine) 만 접근할 수 있다.
+이를 Context Local이라 한다.
+'''
+with app.test_request_context('/hello', method='POST'):
+    #with block을 사용하여 Request를 받으며 다른 작업을 할 수있다.
+    assert request.path =='/hello'
+    assert request.method == 'POST'
+
+#Post http 구현 후 사용해볼 것
+@app.route("/login", methods = ['GET', 'POST'])
+def login(): 
+    if request.method == 'POST':
+        return do_the_login()
+    else:
+        return fail_the_login()
+
+
+
+
+
+
