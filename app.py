@@ -125,21 +125,28 @@ Flask의 Context는 request를 처리하거나 CLI 명령어를 처리하기 위
 이때 Context 개념이 등장한다, Context를 활용하여 특정 변수를 전역 변수처럼 사용하지만 특정 단위(Thread, Process, Conrutine) 만 접근할 수 있다.
 이를 Context Local이라 한다.
 '''
+
 with app.test_request_context('/hello', method='POST'):
     #with block을 사용하여 Request를 받으며 다른 작업을 할 수있다.
     assert request.path =='/hello'
     assert request.method == 'POST'
 
 #Post http 구현 후 사용해볼 것
+def valid_login(**krg):
+    return 0
+
+def log_the_user_in(**krg):
+    return 0
+
 @app.route("/login", methods = ['GET', 'POST'])
 def login(): 
+    error = None
     if request.method == 'POST':
-        return do_the_login()
-    else:
-        return fail_the_login()
-
-
-
+        if valid_login(request.form['username'], request.form['password']):
+            return log_the_user_in(request.form['username'])
+        else:
+            error = 'Invalid username/password'
+    return render_template('login.html', error=error)
 
 
 
